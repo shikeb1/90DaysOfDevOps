@@ -1,0 +1,56 @@
+# Day 30 – Docker Practice Summary
+
+## Tasks Completed
+
+### 1. Create a container without starting itdocker create --name mycontainer nginx
+
+### 2. Run Nginx container in detached modedocker run -d --name mynginx nginx
+docker run -d --name mynginx -p 80:80 nginx
+
+### 3. Exec into container and explore filesystemdocker exec -it mynginx sh
+pwd
+ls
+ls /
+cd /usr/share/nginx/html
+ls
+exit
+
+### 4. Run a single command inside containerdocker exec mynginx ls /
+docker exec mynginx cat /etc/os-release
+
+### 5. Inspect container IP, ports, mountsdocker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mynginx
+docker port mynginx
+docker inspect -f '{{json .Mounts}}' mynginx
+docker inspect mynginx
+
+### 6. Stop all running containersdocker stop $(docker ps -q)
+
+### 7. Remove unused imagesdocker image prune
+docker image prune -a -f
+docker system prune -a
+
+### 8. Check Docker disk usagedocker system df
+docker system df -v
+df -h
+
+## GitHub Work Done
+
+### 9. Clone repositorygit clone https://github.com/shikeb1/90DaysOfDevOps.git
+cd 90DaysOfDevOps
+
+### 10. Navigate to Day 30 foldercd 2026
+mkdir day-30
+
+## Suggested Next Git Commands
+git add .
+git commit -m "Add Day 30 Docker practice"
+git push origin master
+
+## Day 30 Learning Outcome
+- Docker container lifecycle
+- Running containers in detached mode
+- Accessing container shell
+- Inspecting networking and mounts
+- Cleanup of images and resources
+- Docker disk space management
+- GitHub workflow basics

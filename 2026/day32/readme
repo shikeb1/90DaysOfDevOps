@@ -1,0 +1,187 @@
+# Day 32 – Docker Volumes & Networking
+
+## Objective
+
+Understand Docker data persistence and container communication using volumes, bind mounts, and networks.
+
+---
+
+## Task 1: Data Loss Without Volume
+
+### Run PostgreSQL Container
+
+```bash
+docker run -d --name pg1 -e POSTGRES_PASSWORD=1234 postgres
+```
+
+* `docker run` create/start container
+* `-d` detached mode
+* `--name pg1` container name
+* `-e` environment variable
+* `postgres` image
+
+### Create Data
+
+```bash
+docker exec -it pg1 bash
+psql -U postgres
+```
+
+```sql
+CREATE TABLE users(id INT, name TEXT);
+INSERT INTO users VALUES (1,'Shikeb');
+SELECT * FROM users;
+```
+
+### Remove Container
+
+```bash
+docker stop pg1
+docker rm pg1
+```
+
+Result: Data lost because container storage is temporary.
+
+---
+
+## Task 2: Named Volume
+
+### Create Volume
+
+```bash
+docker volume create pgdata
+docker volume ls
+```
+
+### Run PostgreSQL with Volume
+
+```bash
+docker run -d --name pg2 -e POSTGRES_PASSWORD=1234 -v pgdata:/var/lib/postgresql/data postgres
+```
+
+* `-v` mount volume
+* `pgdata` volume name
+* target path stores DB files
+
+Delete container and run again with same volume: data remains.
+
+---
+
+## Task 3: Bind Mount
+
+### Create Host Folder
+
+```bash
+mkdir mysite
+cd mysite
+echo "<h1>Hello Docker</h1>" > index.html
+```
+
+### Run Nginx
+
+```bash
+docker run -d --name web1 -p 8080:80 -v $(pwd):/usr/share/nginx/html nginx
+```
+
+Open: `http://localhost:8080`
+
+Edit `index.html` and refresh browser. Changes appear instantly.
+
+### Difference
+
+* Named Volume: Docker managed persistent storage
+* Bind Mount: Host folder directly shared
+
+---
+
+## Task 4: Docker Networking Basics
+
+```bash
+docker network ls
+docker network inspect bridge
+```
+
+Run containers:
+
+```bash
+docker run -dit --name c1 ubuntu bash
+docker run -dit --name c2 ubuntu bash
+```
+
+Install ping:
+
+```bash
+docker exec -it c1 bash
+apt update && apt install iputils-ping -y
+```
+
+Default bridge often fails by container name, but works by IP.
+
+---
+
+## Task 5: Custom Network
+
+```bash
+docker network create my-app-net
+docker run -dit --name a1 --network my-app-net ubuntu bash
+docker run -dit --name a2 --network my-app-net ubuntu bash
+```
+
+Ping by name from a1 to a2 works.
+
+Reason: User-defined bridge networks include Docker DNS.
+
+---
+
+## Task 6: Full Setup
+
+```bash
+docker network create app-net
+docker volume create dbdata
+```
+
+Run DB:
+
+```bash
+docker run -d --name db --network app-net -v dbdata:/var/lib/postgresql/data -e POSTGRES_PASSWORD=1234 postgres
+```
+
+Run app:
+
+```bash
+docker run -dit --name app --network app-net ubuntu bash
+```
+
+Test:
+
+```bash
+docker exec -it app bash
+apt update && apt install iputils-ping -y
+ping db
+```
+
+---
+
+## Useful Cleanup
+
+```bash
+docker ps
+docker ps -a
+docker stop <name>
+docker rm <name>
+docker volume ls
+docker network ls
+```
+
+---
+
+## Key Learnings
+
+* Containers are temporary.
+* Volumes preserve data.
+* Bind mounts sync local files.
+* Custom networks allow name-based communication.
+
+---
+
+

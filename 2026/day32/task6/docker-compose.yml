@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  app:
+    image: ubuntu
+    depends_on:
+      - db
+
+volumes:
+  dbdata:
